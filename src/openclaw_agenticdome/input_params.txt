@@ -1,0 +1,24 @@
+## Important environment variables
+
+Minimum required:
+
+```bash
+export AgenticDome_API_BASE="https://your-agenticdome-api.example.com"
+export AgenticDome_API_KEY="your-api-key"
+export AgenticDome_TENANT_ID="your-tenant-id"
+```
+
+Recommended production values:
+
+```bash
+export AgenticDome_FAIL_CLOSED=true
+export AgenticDome_REQUIRE_SESSION_ID=true
+export AgenticDome_SDK_MAX_RETRIES=3
+export AgenticDome_RETRY_MAX_ATTEMPTS=1
+export AgenticDome_OUTPUT_SERIALIZATION_MAX_CHARS=200000
+```
+
+If using Redis:
+
+```bash
+export AgenticDome_REDIS_URL="redis://localhost:6379/0"

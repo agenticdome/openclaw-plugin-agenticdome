@@ -1,0 +1,10 @@
+openclaw-plugin-agenticdome/
+├── README.md
+├── pyproject.toml
+├── src/
+│   └── openclaw_agenticdome/
+│       ├── __init__.py
+│       ├── firewall.py
+│       └── middleware.py
+└── examples/
+    └── reference-architecture/

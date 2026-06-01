@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=68.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "openclaw-plugin-agenticdome"
+version = "1.0.0"
+description = "AgenticDome security middleware and firewall plugin for OpenClaw."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Proprietary" }
+
+authors = [
+    { name = "AgenticDome" }
+]
+
+keywords = [
+    "openclaw",
+    "agenticdome",
+    "agentguard",
+    "ai-security",
+    "agent-security",
+    "middleware",
+    "firewall",
+    "guardrails",
+    "a2a",
+    "zero-trust"
+]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Topic :: Security",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+
+dependencies = [
+    "agenticdome-python-sdk>=1.0.0",
+    "redis>=5.0.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "ruff>=0.5.0",
+    "mypy>=1.8.0",
+    "build>=1.0.0",
+    "twine>=5.0.0"
+]
+
+[project.urls]
+Homepage = "https://au.agenticdome.io"
+Repository = "https://github.com/YOUR_ORG/openclaw-plugin-agenticdome"
+Documentation = "https://github.com/YOUR_ORG/openclaw-plugin-agenticdome#readme"
+Issues = "https://github.com/YOUR_ORG/openclaw-plugin-agenticdome/issues"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
+strict = false

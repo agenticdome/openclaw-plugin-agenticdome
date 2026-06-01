@@ -1,0 +1,302 @@
+```markdown
+# 🛡️ OpenClaw Plugin: AgenticDome
+
+Enterprise-grade security middleware for OpenClaw agents.
+
+Protect your OpenClaw agents from prompt injection, unsafe tool execution, unauthorized agent-to-agent delegation, sensitive output leakage, and policy boundary violations using the AgenticDome Zero-Trust control plane.
+
+---
+
+## 🛡️ Securing Your OpenClaw Agents with AgenticDome
+
+Prevent prompt injections, protect tool execution boundaries, and sanitize agent outputs automatically using the AgenticDome Zero-Trust control plane.
+
+## 1. Install the Plugin
+
+```bash
+pip install openclaw-plugin-agenticdome
+```
+
+## 2. Set Your Environment Keys
+
+Add your platform tokens to your local environment configuration:
+
+```bash
+export AgenticDome_API_BASE="https://api.agenticdome.io"
+export AgenticDome_API_KEY="your_developer_api_key"
+export AgenticDome_TENANT_ID="your_tenant_id"
+```
+
+## 3. Register the Middleware in your OpenClaw App
+
+Open your primary runtime config file, for example `app.py` or `main.py`, and inject the security middleware directly into your app loop:
+
+```python
+from openclaw import OpenClawApp
+from openclaw_agenticdome import AgenticDomeSecurityMiddleware
+
+app = OpenClawApp()
+
+# Secure all agents globally across your workspace
+app.include_middleware(AgenticDomeSecurityMiddleware())
+
+app.run()
+```
+
+That is it. Your OpenClaw agents are now protected by AgenticDome.
+
+---
+
+# What This Plugin Protects
+
+The AgenticDome OpenClaw plugin adds runtime protection across the full agent lifecycle:
+
+| Layer | Protection |
+|---|---|
+| Prompt input | Screens inbound user prompts before agent reasoning |
+| Tool execution | Authorizes direct tool and skill execution |
+| Agent-to-agent delegation | Validates manager-to-specialist handoffs |
+| Decision tokens | Enforces single-use delegated execution tokens |
+| Output | Sanitizes/redacts sensitive agent responses |
+| Fail-safe behavior | Supports fail-closed production mode |
+
+---
+
+# Production Configuration
+
+## Required Environment Variables
+
+```bash
+export AgenticDome_API_BASE="https://api.agenticdome.io"
+export AgenticDome_API_KEY="your_developer_api_key"
+export AgenticDome_TENANT_ID="your_tenant_id"
+```
+
+## Recommended Production Environment Variables
+
+```bash
+export AgenticDome_FAIL_CLOSED=true
+export AgenticDome_REQUIRE_SESSION_ID=true
+export AgenticDome_PLATFORM="openclaw"
+export AgenticDome_TIMEOUT_S=20
+export AgenticDome_SDK_MAX_RETRIES=3
+export AgenticDome_RETRY_MAX_ATTEMPTS=1
+export AgenticDome_OUTPUT_SERIALIZATION_MAX_CHARS=200000
+```
+
+## Optional Redis Token Store
+
+For distributed OpenClaw deployments, use Redis so delegated decision tokens work across multiple workers or containers:
+
+```bash
+export AgenticDome_REDIS_URL="redis://localhost:6379/0"
+export AgenticDome_REDIS_KEY_PREFIX="AgenticDome:openclaw:handoff"
+```
+
+Install Redis support:
+
+```bash
+pip install redis
+```
+
+If Redis is not configured, the plugin uses an in-memory token store.
+
+---
+
+# Example: Full `app.py`
+
+```python
+from openclaw import OpenClawApp
+from openclaw_agenticdome import AgenticDomeSecurityMiddleware
+
+app = OpenClawApp()
+
+app.include_middleware(
+    AgenticDomeSecurityMiddleware()
+)
+
+app.run()
+```
+
+---
+
+# Example: Custom Firewall Configuration
+
+If you prefer explicit configuration instead of environment variables:
+
+```python
+from openclaw import OpenClawApp
+from openclaw_agenticdome import (
+    AgenticDomeSecurityMiddleware,
+    OpenClawFirewall,
+    OpenClawFirewallConfig,
+)
+
+config = OpenClawFirewallConfig(
+    api_base="https://api.agenticdome.io",
+    api_key="your_developer_api_key",
+    tenant_id="your_tenant_id",
+    platform="openclaw",
+    fail_closed=True,
+    require_explicit_session_id=True,
+)
+
+firewall = OpenClawFirewall(config=config)
+
+app = OpenClawApp()
+app.include_middleware(AgenticDomeSecurityMiddleware(firewall=firewall))
+app.run()
+```
+
+---
+
+# Security Model
+
+AgenticDome applies Zero-Trust controls to OpenClaw runtime events.
+
+## 1. Inbound Prompt Screening
+
+Before agent reasoning begins, the middleware screens the user prompt for malicious instructions, prompt injection attempts, policy violations, and unsafe requests.
+
+## 2. Tool Execution Authorization
+
+Before a tool or skill is executed, the plugin checks whether the agent is authorized to perform that action with the supplied arguments.
+
+## 3. Delegated Agent Execution
+
+For manager-to-specialist handoffs, the plugin authorizes the delegation and mints a decision token. The specialist must verify that token before executing the delegated task.
+
+Decision tokens are consumed as strict single-use nonces.
+
+## 4. Output Sanitization
+
+After tool execution, the plugin sanitizes the output before it is returned to the agent or user. Sensitive data can be redacted or blocked depending on your AgenticDome policy.
+
+---
+
+# Failure Behavior
+
+By default, production deployments should fail closed:
+
+```bash
+export AgenticDome_FAIL_CLOSED=true
+```
+
+When fail-closed mode is enabled, if AgenticDome cannot validate an action, the plugin blocks execution.
+
+For local development only, you may use fail-open mode:
+
+```bash
+export AgenticDome_FAIL_CLOSED=false
+```
+
+Fail-open mode is not recommended for production.
+
+---
+
+# Environment Variable Reference
+
+| Variable | Default | Description |
+|---|---:|---|
+| `AgenticDome_API_BASE` | Required | AgenticDome API base URL |
+| `AgenticDome_API_KEY` | Required | AgenticDome API key |
+| `AgenticDome_TENANT_ID` | Required | Tenant/workspace ID |
+| `AgenticDome_PLATFORM` | `openclaw` | Platform name sent to AgenticDome |
+| `AgenticDome_TIMEOUT_S` | `20` | SDK request timeout |
+| `AgenticDome_FAIL_CLOSED` | `true` | Block execution if validation fails |
+| `AgenticDome_REQUIRE_SESSION_ID` | `true` | Require explicit OpenClaw session IDs |
+| `AgenticDome_DEFAULT_TOOL_PLATFORM` | `python` | Default platform for tools |
+| `AgenticDome_REDACT_PII` | `true` | Request PII redaction on outputs |
+| `AgenticDome_REDACT_SECRETS` | `true` | Request secret redaction on outputs |
+| `AgenticDome_BLOCK_ON_SENSITIVE_OUTPUT` | `false` | Block instead of redact sensitive output |
+| `AgenticDome_HANDOFF_TOKEN_TTL_S` | `900` | Delegation token TTL in seconds |
+| `AgenticDome_REDIS_URL` | Empty | Optional Redis URL |
+| `AgenticDome_REDIS_KEY_PREFIX` | `AgenticDome:openclaw:handoff` | Redis key prefix |
+| `AgenticDome_SDK_MAX_RETRIES` | `3` | SDK-level HTTP retries |
+| `AgenticDome_RETRY_MAX_ATTEMPTS` | `1` | Optional firewall-level retry attempts |
+| `AgenticDome_OUTPUT_SERIALIZATION_MAX_CHARS` | `200000` | Max serialized output length |
+
+---
+
+## Reference Architecture
+
+A complete vulnerable-vs-secured multi-agent example is available in:
+
+```text
+examples/reference-architecture/
+
+# Troubleshooting
+
+## `AgenticDome firewall misconfigured`
+
+Make sure these variables are set:
+
+```bash
+echo $AgenticDome_API_BASE
+echo $AgenticDome_API_KEY
+echo $AgenticDome_TENANT_ID
+```
+
+## `Missing required explicit session_id`
+
+OpenClaw must pass a non-empty `session_id` to middleware hooks.
+
+For development only, you can disable this:
+
+```bash
+export AgenticDome_REQUIRE_SESSION_ID=false
+```
+
+## Redis fallback warning
+
+If you see:
+
+```text
+Redis token store unavailable; falling back to memory
+```
+
+verify your Redis URL:
+
+```bash
+redis-cli ping
+```
+
+Expected response:
+
+```text
+PONG
+```
+
+---
+
+# Package Import
+
+The plugin exposes:
+
+```python
+from openclaw_agenticdome import AgenticDomeSecurityMiddleware
+```
+
+For advanced use:
+
+```python
+from openclaw_agenticdome import (
+    AgenticDomeSecurityMiddleware,
+    OpenClawFirewall,
+    OpenClawFirewallConfig,
+    OpenClawExecutionDenied,
+)
+```
+
+---
+
+# License
+
+Proprietary.
+
+---
+
+# Support
+
+For enterprise onboarding, policy design, or production deployment support, contact AgenticDome.
+```
