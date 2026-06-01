@@ -55,11 +55,13 @@ dev = [
     "twine>=5.0.0"
 ]
 
+
 [project.urls]
 Homepage = "https://au.agenticdome.io"
-Repository = "https://github.com/YOUR_ORG/openclaw-plugin-agenticdome"
-Documentation = "https://github.com/YOUR_ORG/openclaw-plugin-agenticdome#readme"
-Issues = "https://github.com/YOUR_ORG/openclaw-plugin-agenticdome/issues"
+Repository = "https://github.com/agenticdome/openclaw-plugin-agenticdome"
+Documentation = "https://github.com/agenticdome/openclaw-plugin-agenticdome#readme"
+Issues = "https://github.com/agenticdome/openclaw-plugin-agenticdome/issues"
+
 
 [tool.setuptools]
 package-dir = { "" = "src" }
